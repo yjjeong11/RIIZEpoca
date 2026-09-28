@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 포토카드 북</title>
+<style>
+:root{
+  --bg:#fff6ec; --surface:#ffffff; --ink:#2b2320; --muted:#8a7a70; --line:#f0dfcf;
+  --accent:#ff7a2f; --accent2:#ffb347; --accent-ink:#ffffff; --star:#ffb020; --danger:#d64545;
+  --shadow:0 6px 20px rgba(255,122,47,.12);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1d1714; --surface:#2a221e; --ink:#f7ece4; --muted:#b39f92; --line:#3d3029;
+    --shadow:0 6px 20px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1d1714; --surface:#2a221e; --ink:#f7ece4; --muted:#b39f92; --line:#3d3029;
+  --shadow:0 6px 20px rgba(0,0,0,.35);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:16px}
+.hero{position:relative;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;min-height:150px;box-shadow:var(--shadow)}
+.hero .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.55}
+.hero .inner{position:relative;padding:22px 20px;display:flex;align-items:center;gap:16px}
+.mascot{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.3);border:3px solid #fff;flex:none;display:grid;place-items:center;font-size:38px;overflow:hidden;background-size:cover;background-position:center}
+.hero h1{margin:0;font-size:1.6rem;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.hero p{margin:4px 0 0;opacity:.95;font-size:.92rem;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+.hero .tools{position:absolute;right:10px;top:10px;display:flex;gap:6px}
+.chip{background:rgba(255,255,255,.85);color:#5a3a25;border:0;border-radius:999px;padding:6px 11px;font-size:.78rem;cursor:pointer;font-family:inherit}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.25rem;color:var(--accent)}
+.stat span{font-size:.75rem;color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.bar select,.bar input{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:9px 10px;font-family:inherit;font-size:.9rem;min-width:0}
+.bar input[type=search]{flex:1;min-width:120px}
+button.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.95rem}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:9px 14px;cursor:pointer;font-family:inherit}
+button.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:12px;padding:9px 14px;cursor:pointer;font-family:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.card .img{aspect-ratio:2/3;background:var(--line);background-size:cover;background-position:center;display:grid;place-items:center;color:var(--muted);font-size:2rem;position:relative}
+.card .fav{position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;border-radius:999px;font-size:.7rem;padding:3px 8px;font-weight:700}
+.card .meta{padding:10px 11px}
+.card .meta strong{display:block;font-size:.95rem}
+.card .meta small{color:var(--muted);display:block;font-size:.76rem}
+.stars{color:var(--star);letter-spacing:1px;font-size:.9rem}
+.stars .off{color:var(--line)}
+.empty{text-align:center;color:var(--muted);padding:50px 10px;background:var(--surface);border:1px dashed var(--line);border-radius:18px}
+dialog{border:0;border-radius:22px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,94vw);max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(20,10,5,.55)}
+.dlg{padding:18px;overflow-y:auto;max-height:92vh}
+.dlg h2{margin:0 0 12px}
+label{display:block;font-size:.8rem;color:var(--muted);margin:10px 0 4px}
+.dlg input,.dlg select,.dlg textarea{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:.95rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.starpick{display:flex;gap:4px;font-size:1.9rem;cursor:pointer;user-select:none}
+.starpick span{color:var(--line)}
+.starpick span.on{color:var(--star)}
+.preview{margin-top:8px;width:120px;aspect-ratio:2/3;border-radius:12px;background:var(--line) center/cover;display:none}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.detail-img{width:100%;aspect-ratio:2/3;max-height:60vh;object-fit:contain;background:var(--line);border-radius:14px}
+.kv{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;margin:12px 0;font-size:.92rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99}
+.toast.show{opacity:1}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:1.3rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero" id="hero">
+    <div class="bg" id="heroBg"></div>
+    <div class="tools">
+      <button class="chip" id="btnBanner">배너 변경</button>
+      <button class="chip" id="btnMascot">캐릭터 변경</button>
+    </div>
+    <div class="inner">
+      <div class="mascot" id="mascot">🧡</div>
+      <div>
+        <h1>내 포토카드 북</h1>
+        <p>모은 카드, 구매 기록, 최애 점수를 한곳에</p>
+      </div>
+    </div>
+  </header>
+ 
+  <section class="stats">
+    <div class="stat"><b id="sCount">0</b><span>보유 카드</span></div>
+    <div class="stat"><b id="sSum">0원</b><span>총 구매 금액</span></div>
+    <div class="stat"><b id="sAvg">-</b><span>평균 최애 점수</span></div>
+    <div class="stat"><b id="sTop">-</b><span>가장 많이 모은 멤버 (단체·기타 제외)</span></div>
+  </section>
+ 
+  <section class="bar">
+    <input type="search" id="q" placeholder="멤버·앨범·구매처 검색">
+    <select id="fMember"><option value="">전체 멤버</option></select>
+    <select id="fAlbum"><option value="">전체 앨범</option></select>
+    <select id="sort">
+      <option value="date-desc">구매일 최신순</option>
+      <option value="date-asc">구매일 오래된순</option>
+      <option value="score-desc">최애 점수 높은순</option>
+      <option value="price-desc">가격 높은순</option>
+    </select>
+    <button class="primary" id="btnAdd">+ 카드 추가</button>
+  </section>
+ 
+  <section class="grid" id="grid"></section>
+ 
+  <p style="margin-top:22px;text-align:center">
+    <button class="ghost" id="btnExport">백업 저장(JSON)</button>
+    <button class="ghost" id="btnImport">백업 불러오기</button>
+  </p>
+  <p style="text-align:center;color:var(--muted);font-size:.78rem;margin-top:6px">데이터는 이 기기의 이 브라우저에만 저장됨. 기기를 바꾸거나 브라우저 데이터를 지우기 전에 백업 저장을 권장함.</p>
+</div>
+ 
+<dialog id="dlgForm"><div class="dlg">
+  <h2 id="formTitle">카드 추가</h2>
+  <label>멤버</label>
+  <select id="fName">
+    <option value="">멤버 선택</option>
+    <option value="쇼타로">쇼타로</option><option value="은석">은석</option><option value="성찬">성찬</option>
+    <option value="원빈">원빈</option><option value="소희">소희</option><option value="앤톤">앤톤</option>
+    <option value="단체">단체</option><option value="기타">기타 (직접 입력)</option>
+  </select>
+  <input id="fNameOther" placeholder="카드 이름 직접 입력 (예: 유닛컷, 특전 포카)" style="display:none;margin-top:8px">
+  <label>앨범 / 버전</label>
+  <input id="fAlbumIn" placeholder="예: 미니앨범 2집 (버전명)">
+  <div class="row">
+    <div><label>구매처</label><input id="fShop" placeholder="예: 위버스샵, 중고거래"></div>
+    <div><label>구매일</label><input id="fDate" type="date"></div>
+  </div>
+  <label>구매 가격 (원)</label>
+  <input id="fPrice" type="number" min="0" inputmode="numeric" placeholder="0">
+  <label>최애 점수</label>
+  <div class="starpick" id="starpick"></div>
+  <label>사진</label>
+  <input id="fPhoto" type="file" accept="image/*">
+  <div class="preview" id="preview"></div>
+  <label>메모 (선택)</label>
+  <textarea id="fMemo" rows="2" placeholder="특전 종류, 상태 등"></textarea>
+  <div class="actions">
+    <button class="ghost" id="btnCancel">취소</button>
+    <button class="primary" id="btnSave">저장</button>
+  </div>
+</div></dialog>
+ 
+<dialog id="dlgView"><div class="dlg" id="viewBody"></div></dialog>
+<input type="file" id="fileBanner" accept="image/*" hidden>
+<input type="file" id="fileMascot" accept="image/*" hidden>
+<input type="file" id="fileImport" accept="application/json" hidden>
+<div class="toast" id="toast"></div>
+ 
+<script>
+(function(){
+  var DB_NAME='photocard-book', STORE='kv';
+  var db=null, cards=[], theme={banner:null,mascot:null};
+  var memFallback={}; // used if IndexedDB unavailable
+  var editingId=null, curScore=0, curPhoto=null;
+  var MEMBERS=['쇼타로','은석','성찬','원빈','소희','앤톤'];
+  var PRESET=MEMBERS.concat(['단체','기타']);
+  function toggleOther(){$('fNameOther').style.display=($('fName').value==='기타')?'block':'none'}
+ 
+  function $(id){return document.getElementById(id)}
+  function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1800)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ 
+  function openDB(){
+    return new Promise(function(res){
+      try{
+        var r=indexedDB.open(DB_NAME,1);
+        r.onupgradeneeded=function(){r.result.createObjectStore(STORE)};
+        r.onsuccess=function(){db=r.result;res()};
+        r.onerror=function(){res()};
+      }catch(e){res()}
+    });
+  }
+  function kvGet(k){
+    return new Promise(function(res){
+      if(!db){res(memFallback[k]);return}
+      try{var q=db.transaction(STORE).objectStore(STORE).get(k);q.onsuccess=function(){res(q.result)};q.onerror=function(){res()}}catch(e){res()}
+    });
+  }
+  function kvSet(k,v){
+    return new Promise(function(res){
+      if(!db){memFallback[k]=v;res();return}
+      try{var tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(v,k);tx.oncomplete=function(){res()};tx.onerror=function(){toast('저장 실패');res()}}catch(e){res()}
+    });
+  }
+ 
+  function compress(file,max){
+    return new Promise(function(res,rej){
+      var fr=new FileReader();
+      fr.onload=function(){
+        var img=new Image();
+        img.onload=function(){
+          var s=Math.min(1,max/Math.max(img.width,img.height));
+          var c=document.createElement('canvas');
+          c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          res(c.toDataURL('image/jpeg',0.85));
+        };
+        img.onerror=rej;img.src=fr.result;
+      };
+      fr.onerror=rej;fr.readAsDataURL(file);
+    });
+  }
+ 
+  function won(n){return Number(n||0).toLocaleString('ko-KR')+'원'}
+  function starsHtml(n){var s='';for(var i=1;i<=5;i++)s+='<span class="'+(i<=n?'':'off')+'">★</span>';return '<span class="stars">'+s+'</span>'}
+ 
+  function applyTheme(){
+    $('heroBg').style.backgroundImage=theme.banner?'url('+theme.banner+')':'none';
+    var m=$('mascot');
+    if(theme.mascot){m.style.backgroundImage='url('+theme.mascot+')';m.textContent=''}
+    else{m.style.backgroundImage='none';m.textContent='🧡'}
+  }
+ 
+  function refreshFilters(){
+    var mv=$('fMember').value, av=$('fAlbum').value;
+    function fill(sel,key,label,cur){
+      var set={};cards.forEach(function(c){if(c[key])set[c[key]]=1});
+      sel.innerHTML='<option value="">'+label+'</option>'+Object.keys(set).sort().map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>'}).join('');
+      sel.value=set[cur]?cur:'';
+    }
+    fill($('fMember'),'name','전체 멤버',mv);
+    fill($('fAlbum'),'album','전체 앨범',av);
+  }
+ 
+  function render(){
+    refreshFilters();
+    var q=$('q').value.trim().toLowerCase(), fm=$('fMember').value, fa=$('fAlbum').value, so=$('sort').value;
+    var list=cards.filter(function(c){
+      if(fm&&c.name!==fm)return false;
+      if(fa&&c.album!==fa)return false;
+      if(q&&(c.name+' '+c.album+' '+c.shop+' '+(c.memo||'')).toLowerCase().indexOf(q)<0)return false;
+      return true;
+    });
+    list.sort(function(a,b){
+      if(so==='date-asc')return (a.date||'').localeCompare(b.date||'');
+      if(so==='score-desc')return (b.score||0)-(a.score||0);
+      if(so==='price-desc')return (b.price||0)-(a.price||0);
+      return (b.date||'').localeCompare(a.date||'');
+    });
+    var g=$('grid');
+    if(!list.length){
+      g.innerHTML='<div class="empty" style="grid-column:1/-1">'+(cards.length?'조건에 맞는 카드가 없음':'아직 등록된 카드가 없음.<br>오른쪽 위 “+ 카드 추가”로 첫 카드를 기록해 보기')+'</div>';
+    }else{
+      g.innerHTML=list.map(function(c){
+        return '<article class="card" data-id="'+c.id+'"><div class="img" style="'+(c.photo?'background-image:url('+c.photo+')':'')+'">'+(c.photo?'':'🃏')+(c.score===5?'<span class="fav">최애</span>':'')+'</div><div class="meta"><strong>'+esc(c.name||'이름 없음')+'</strong><small>'+esc(c.album||'-')+'</small>'+starsHtml(c.score||0)+'<small>'+esc(c.shop||'')+(c.price?' · '+won(c.price):'')+'</small></div></article>';
+      }).join('');
+    }
+    // stats
+    $('sCount').textContent=cards.length;
+    $('sSum').textContent=won(cards.reduce(function(s,c){return s+(Number(c.price)||0)},0));
+    var rated=cards.filter(function(c){return c.score>0});
+    $('sAvg').textContent=rated.length?(rated.reduce(function(s,c){return s+c.score},0)/rated.length).toFixed(1)+' / 5':'-';
+    var cnt={};cards.forEach(function(c){if(MEMBERS.indexOf(c.name)>=0)cnt[c.name]=(cnt[c.name]||0)+1});
+    var mx=0;Object.keys(cnt).forEach(function(k){if(cnt[k]>mx)mx=cnt[k]});
+    var tops=Object.keys(cnt).filter(function(k){return cnt[k]===mx});
+    $('sTop').textContent=mx?tops.join(', ')+' ('+mx+'장)':'-';
+  }
+ 
+  function persist(){return kvSet('cards',cards)}
+ 
+  function buildStars(){
+    var sp=$('starpick');sp.innerHTML='';
+    for(var i=1;i<=5;i++){(function(i){
+      var s=document.createElement('span');s.textContent='★';s.className=i<=curScore?'on':'';
+      s.onclick=function(){curScore=(curScore===i?0:i);buildStars()};
+      sp.appendChild(s);
+    })(i)}
+  }
+  function setPreview(src){
+    var p=$('preview');
+    if(src){p.style.display='block';p.style.backgroundImage='url('+src+')'}else{p.style.display='none';p.style.backgroundImage='none'}
+  }
+ 
+  function openForm(card){
+    editingId=card?card.id:null;
+    $('formTitle').textContent=card?'카드 수정':'카드 추가';
+    var nm=card?(card.name||''):'';
+    if(!nm){$('fName').value='';$('fNameOther').value=''}
+    else if(PRESET.indexOf(nm)>=0&&nm!=='기타'){$('fName').value=nm;$('fNameOther').value=''}
+    else{$('fName').value='기타';$('fNameOther').value=nm}
+    toggleOther();
+    $('fAlbumIn').value=card?card.album||'':'';
+    $('fShop').value=card?card.shop||'':'';
+    $('fDate').value=card?card.date||'':new Date().toISOString().slice(0,10);
+    $('fPrice').value=card&&card.price?card.price:'';
+    $('fMemo').value=card?card.memo||'':'';
+    $('fPhoto').value='';
+    curScore=card?card.score||0:0;
+    curPhoto=card?card.photo||null:null;
+    buildStars();setPreview(curPhoto);
+    $('dlgForm').showModal();
+  }
+ 
+  function openView(id){
+    var c=cards.find(function(x){return x.id===id});if(!c)return;
+    $('viewBody').innerHTML=
+      (c.photo?'<img class="detail-img" src="'+c.photo+'" alt="">':'<div class="detail-img" style="display:grid;place-items:center;font-size:3rem">🃏</div>')+
+      '<h2 style="margin:12px 0 2px">'+esc(c.name||'이름 없음')+'</h2>'+starsHtml(c.score||0)+
+      '<dl class="kv"><dt>앨범</dt><dd>'+esc(c.album||'-')+'</dd><dt>구매처</dt><dd>'+esc(c.shop||'-')+'</dd><dt>구매일</dt><dd>'+esc(c.date||'-')+'</dd><dt>가격</dt><dd>'+(c.price?won(c.price):'-')+'</dd>'+(c.memo?'<dt>메모</dt><dd>'+esc(c.memo)+'</dd>':'')+'</dl>'+
+      '<div class="actions"><button class="danger" id="vDel">삭제</button><button class="ghost" id="vClose">닫기</button><button class="primary" id="vEdit">수정</button></div>';
+    $('vClose').onclick=function(){$('dlgView').close()};
+    $('vEdit').onclick=function(){$('dlgView').close();openForm(c)};
+    $('vDel').onclick=function(){
+      if(!confirm('이 카드를 삭제할까요? 되돌릴 수 없음.'))return;
+      cards=cards.filter(function(x){return x.id!==id});
+      persist().then(function(){$('dlgView').close();render();toast('삭제됨')});
+    };
+    $('dlgView').showModal();
+  }
+ 
+  // events
+  $('btnAdd').onclick=function(){openForm(null)};
+  $('fName').onchange=toggleOther;
+  $('btnCancel').onclick=function(){$('dlgForm').close()};
+  $('fPhoto').onchange=function(e){
+    var f=e.target.files[0];if(!f)return;
+    compress(f,1000).then(function(d){curPhoto=d;setPreview(d)}).catch(function(){toast('이미지를 읽지 못함')});
+  };
+  $('btnSave').onclick=function(){
+    var name=$('fName').value;
+    if(name==='기타')name=$('fNameOther').value.trim();
+    if(!name){toast('멤버를 선택하거나 이름을 입력해 주세요');return}
+    var data={
+      name:name,album:$('fAlbumIn').value.trim(),shop:$('fShop').value.trim(),
+      date:$('fDate').value,price:Number($('fPrice').value)||0,score:curScore,
+      photo:curPhoto,memo:$('fMemo').value.trim()
+    };
+    if(editingId){
+      cards=cards.map(function(c){return c.id===editingId?Object.assign({},c,data):c});
+    }else{
+      data.id='c'+Date.now()+Math.random().toString(36).slice(2,6);
+      cards.push(data);
+    }
+    persist().then(function(){$('dlgForm').close();render();toast('저장됨')});
+  };
+  $('grid').onclick=function(e){
+    var el=e.target.closest('.card');if(el)openView(el.getAttribute('data-id'));
+  };
+  ['q','fMember','fAlbum','sort'].forEach(function(id){$(id).addEventListener('input',render)});
+ 
+  $('btnBanner').onclick=function(){$('fileBanner').click()};
+  $('btnMascot').onclick=function(){$('fileMascot').click()};
+  $('fileBanner').onchange=function(e){var f=e.target.files[0];if(!f)return;compress(f,1400).then(function(d){theme.banner=d;kvSet('theme',theme);applyTheme()})};
+  $('fileMascot').onchange=function(e){var f=e.target.files[0];if(!f)return;compress(f,400).then(function(d){theme.mascot=d;kvSet('theme',theme);applyTheme()})};
+ 
+  $('btnExport').onclick=function(){
+    var blob=new Blob([JSON.stringify({cards:cards,theme:theme},null,1)],{type:'application/json'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='photocard-backup.json';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+    toast('백업 파일 생성 시도함. 저장되지 않으면 브라우저 다운로드 설정을 확인해 주세요');
+  };
+  $('btnImport').onclick=function(){$('fileImport').click()};
+  $('fileImport').onchange=function(e){
+    var f=e.target.files[0];if(!f)return;
+    var fr=new FileReader();
+    fr.onload=function(){
+      try{
+        var d=JSON.parse(fr.result);
+        if(!d||!Array.isArray(d.cards))throw 0;
+        if(!confirm('현재 데이터를 백업 파일 내용으로 교체할까요?'))return;
+        cards=d.cards;if(d.theme)theme=d.theme;
+        Promise.all([persist(),kvSet('theme',theme)]).then(function(){applyTheme();render();toast('불러옴')});
+      }catch(err){toast('올바른 백업 파일이 아님')}
+    };
+    fr.readAsText(f);
+  };
+ 
+  openDB().then(function(){return Promise.all([kvGet('cards'),kvGet('theme')])}).then(function(r){
+    cards=Array.isArray(r[0])?r[0]:[];
+    theme=r[1]||theme;
+    applyTheme();render();
+  });
+})();
+</script>
+</body>
+</html>
+ 
